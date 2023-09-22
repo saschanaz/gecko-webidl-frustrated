@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "remove-supported": "deno run --allow-read --allow-write bin/remove-supported.ts"
+  }
+}

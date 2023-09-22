@@ -1,0 +1,49 @@
+{
+  "version": "3",
+  "packages": {
+    "specifiers": {
+      "npm:@mdn/browser-compat-data": "npm:@mdn/browser-compat-data@5.3.17",
+      "npm:@mdn/browser-compat-data@5.3.17": "npm:@mdn/browser-compat-data@5.3.17",
+      "npm:bcd-idl-mapper": "npm:bcd-idl-mapper@2.2.2_@mdn+browser-compat-data@5.3.17_@webref+idl@3.38.2__webidl2@24.4.1_webidl2@24.4.1",
+      "npm:bcd-idl-mapper@2.2.2": "npm:bcd-idl-mapper@2.2.2_@mdn+browser-compat-data@5.3.17_@webref+idl@3.38.2__webidl2@24.4.1_webidl2@24.4.1",
+      "npm:gecko-webidl": "npm:gecko-webidl@1.0.1",
+      "npm:gecko-webidl@1.0.1": "npm:gecko-webidl@1.0.1"
+    },
+    "npm": {
+      "@mdn/browser-compat-data@5.3.17": {
+        "integrity": "sha512-XoQWMIFRcg1U6ac7GDmqpWvJ1wkAKp5UwHh2rHzQgwaACVMcC4yWa4lW0HekGcNsvpD5e8OX+trAcEt8N+0Dsg==",
+        "dependencies": {}
+      },
+      "@webref/idl@3.38.2_webidl2@24.4.1": {
+        "integrity": "sha512-sJ8vIAxM31atoAhP755jrd5UeFW1YQnR5PWe5ZPfl+S7SbwmsQncvZ05gkkUPtElPrQ0OwZ+UC0LSeQSXChZLQ==",
+        "dependencies": {
+          "webidl2": "webidl2@24.4.1"
+        }
+      },
+      "bcd-idl-mapper@2.2.2_@mdn+browser-compat-data@5.3.17_@webref+idl@3.38.2__webidl2@24.4.1_webidl2@24.4.1": {
+        "integrity": "sha512-kcmQeTb6yzeckLIo9pvI26fvHuDQdh0eQL3M44boDUJwQOyasMrN/fEgZD43wvYVLTA/h3sXit+Fwd7NZ2irpA==",
+        "dependencies": {
+          "@mdn/browser-compat-data": "@mdn/browser-compat-data@5.3.17",
+          "@webref/idl": "@webref/idl@3.38.2_webidl2@24.4.1",
+          "webidl2": "webidl2@24.4.1"
+        }
+      },
+      "commander@10.0.1": {
+        "integrity": "sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==",
+        "dependencies": {}
+      },
+      "gecko-webidl@1.0.1": {
+        "integrity": "sha512-54ny5oYXSHPsmw7MKA/tj8GuFxZ8aQRJiPEzGhzVG/HqNCu7pVlp0k6VSy623j/CIzcFj++WyiKLXc2aH7pw3g==",
+        "dependencies": {
+          "commander": "commander@10.0.1",
+          "webidl2": "webidl2@24.4.1"
+        }
+      },
+      "webidl2@24.4.1": {
+        "integrity": "sha512-cPToqvZlxTAlaMucZyU28XtFLJz3XPdTdIWK/r3IaP1jfkjqne3OTniJS8DZqfzee1aBUQn80d6s2vYert50kg==",
+        "dependencies": {}
+      }
+    }
+  },
+  "remote": {}
+}
