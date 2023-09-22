@@ -25,6 +25,7 @@ const exceptions: Record<string, string[]> = {
 };
 
 // Iterate the webidl directory
+const trimmedList: string[] = [];
 const base = new URL("../../gecko-dev/dom/webidl/", import.meta.url);
 for await (const file of Deno.readDir(base)) {
   if (!file.name.endsWith(".webidl")) {
@@ -33,7 +34,7 @@ for await (const file of Deno.readDir(base)) {
 
   // Parse each IDL file
   const fileUrl = new URL(file.name, base);
-  const idl = await Deno.readTextFile(fileUrl)
+  const idl = await Deno.readTextFile(fileUrl);
   let ast;
   try {
     ast = webidl.parse(idl);
@@ -43,27 +44,39 @@ for await (const file of Deno.readDir(base)) {
   }
 
   // Pick interfaces and trim [InstrumentedProps] based on BCD support data
-  let trimmed = false;
+  const trimmed: string[] = [];
   for (const i of ast.filter(i => i.type === "interface" && !i.partial)) {
-    trimmed ||= trimInstrumentedProps(i);
+    trimmed.push(...trimInstrumentedProps(i).map(p => `method ${i.name}.${p}`));
   }
 
   // Rewrite IDL if the trim happened
-  if (trimmed) {
+  if (trimmed.length) {
     await Deno.writeTextFile(fileUrl, webidl.write(ast));
+    trimmedList.push(...trimmed);
   }
 }
+
+// Remove the corresponding items in UseCounters.conf
+if (trimmedList.length) {
+  const confUrl = new URL("../../gecko-dev/dom/base/UseCounters.conf", import.meta.url);
+  const conf = await Deno.readTextFile(confUrl);
+
+  const lines = conf.split("\n").filter(l => !trimmedList.includes(l));
+
+  await Deno.writeTextFile(confUrl, lines.join("\n"));
+}
+
 
 function getInstrumentedPropsExtendedAttr(i) {
   return i.extAttrs
     .find(e => e.name === "InstrumentedProps")?.rhs.value;
 }
 
-function trimInstrumentedProps(i) {
+function trimInstrumentedProps(i): string[] {
   // Get the list from [InstrumentedProps=?]
   const instrumentedProps = getInstrumentedPropsExtendedAttr(i);
   if (!instrumentedProps) {
-    return false;
+    return [];
   }
 
   const redundant: string[] = [];
@@ -97,5 +110,7 @@ function trimInstrumentedProps(i) {
   instrumentedProps.length = 0;
   instrumentedProps.push(...trimmed);
 
-  return !!redundant.length;
+  console.log(redundant);
+
+  return redundant;
 }
