@@ -62,3 +62,14 @@ instrumentedProps.sort((x, y) => x.value.localeCompare(y.value));
 
 // Rewrite
 await Deno.writeTextFile(new URL(window.source.name, base), webidl.write(astMap.get(window.source.name)));
+
+const confUrl = new URL("../../gecko-dev/dom/base/UseCounters.conf", import.meta.url);
+const conf = await Deno.readTextFile(confUrl);
+
+const start = conf.indexOf("method Window.");
+const end = conf.indexOf('\n\n', start);
+
+const newWindowProps = instrumentedProps.map(p => `method Window.${p.value}`).join("\n");
+const newConf = conf.slice(0, start) + newWindowProps + conf.slice(end);
+
+await Deno.writeTextFile(confUrl, newConf);
