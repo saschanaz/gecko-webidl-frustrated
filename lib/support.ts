@@ -26,3 +26,10 @@ function hasStableImpl(
 export function supportedByGeckoEverywhere(support: SupportBlock) {
   return hasStableImpl(support.firefox) && hasStableImpl(support.firefox_android);
 }
+
+export function lacksOnlyGeckoSupport(support: SupportBlock) {
+  const geckoAll = supportedByGeckoEverywhere(support);
+  const blinkAny = hasStableImpl(support.chrome) || hasStableImpl(support.chrome_android);
+  const webkitAny = hasStableImpl(support.safari) || hasStableImpl(support.safari_ios);
+  return !geckoAll && blinkAny && webkitAny;
+}

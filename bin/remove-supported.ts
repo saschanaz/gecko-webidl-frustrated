@@ -2,6 +2,7 @@ import * as webidl from "npm:gecko-webidl@1.0.1"
 import bcdApi from "npm:bcd-idl-mapper@2.2.2"
 import bcd from "npm:@mdn/browser-compat-data@5.3.17" with { type: "json" }
 import { supportedByGeckoEverywhere } from "../lib/support.ts";
+import { getInstrumentedPropsExtendedAttr, iterateIdls } from "../lib/idl.ts";
 
 const exceptions: Record<string, string[]> = {
   Window: [
@@ -27,22 +28,7 @@ const exceptions: Record<string, string[]> = {
 // Iterate the webidl directory
 const trimmedList: string[] = [];
 const base = new URL("../../gecko-dev/dom/webidl/", import.meta.url);
-for await (const file of Deno.readDir(base)) {
-  if (!file.name.endsWith(".webidl")) {
-    continue;
-  }
-
-  // Parse each IDL file
-  const fileUrl = new URL(file.name, base);
-  const idl = await Deno.readTextFile(fileUrl);
-  let ast;
-  try {
-    ast = webidl.parse(idl);
-  } catch (cause) {
-    console.warn(`Skipping ${fileUrl.toString()}:`, cause.message);
-    continue;
-  }
-
+for await (const { fileName, ast } of iterateIdls(base)) {
   // Pick interfaces and trim [InstrumentedProps] based on BCD support data
   const trimmed: string[] = [];
   for (const i of ast.filter(i => i.type === "interface" && !i.partial)) {
@@ -51,7 +37,7 @@ for await (const file of Deno.readDir(base)) {
 
   // Rewrite IDL if the trim happened
   if (trimmed.length) {
-    await Deno.writeTextFile(fileUrl, webidl.write(ast));
+    await Deno.writeTextFile(new URL(fileName, base), webidl.write(ast));
     trimmedList.push(...trimmed);
   }
 }
@@ -64,12 +50,6 @@ if (trimmedList.length) {
   const lines = conf.split("\n").filter(l => !trimmedList.includes(l));
 
   await Deno.writeTextFile(confUrl, lines.join("\n"));
-}
-
-
-function getInstrumentedPropsExtendedAttr(i) {
-  return i.extAttrs
-    .find(e => e.name === "InstrumentedProps")?.rhs.value;
 }
 
 function trimInstrumentedProps(i): string[] {
