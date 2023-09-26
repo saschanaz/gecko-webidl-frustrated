@@ -33,3 +33,9 @@ export function lacksOnlyGeckoSupport(support: SupportBlock) {
   const webkitAny = hasStableImpl(support.safari) || hasStableImpl(support.safari_ios);
   return !geckoAll && blinkAny && webkitAny;
 }
+
+export function lacksOthersSupport(support: SupportBlock) {
+  const blinkAny = hasStableImpl(support.chrome) || hasStableImpl(support.chrome_android);
+  const webkitAny = hasStableImpl(support.safari) || hasStableImpl(support.safari_ios);
+  return !blinkAny && !webkitAny;
+}

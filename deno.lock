@@ -4,6 +4,7 @@
     "specifiers": {
       "npm:@mdn/browser-compat-data": "npm:@mdn/browser-compat-data@5.3.17",
       "npm:@mdn/browser-compat-data@5.3.17": "npm:@mdn/browser-compat-data@5.3.17",
+      "npm:@webref/idl": "npm:@webref/idl@3.38.2_webidl2@24.4.1",
       "npm:bcd-idl-mapper": "npm:bcd-idl-mapper@2.2.2_@mdn+browser-compat-data@5.3.17_@webref+idl@3.38.2__webidl2@24.4.1_webidl2@24.4.1",
       "npm:bcd-idl-mapper@2.2.2": "npm:bcd-idl-mapper@2.2.2_@mdn+browser-compat-data@5.3.17_@webref+idl@3.38.2__webidl2@24.4.1_webidl2@24.4.1",
       "npm:gecko-webidl": "npm:gecko-webidl@1.0.1",

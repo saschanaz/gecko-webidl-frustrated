@@ -1,8 +1,8 @@
 import * as webidl from "npm:gecko-webidl@1.0.1"
+import { listAll as listAllIdl } from "npm:@webref/idl";
 
 export function getInstrumentedPropsExtendedAttr(i) {
-  return i.extAttrs
-    .find(e => e.name === "InstrumentedProps")?.rhs.value;
+  return i.extAttrs?.find(e => e.name === "InstrumentedProps")?.rhs.value;
 }
 
 export function getExposedGlobals(i) {
@@ -11,7 +11,7 @@ export function getExposedGlobals(i) {
   return Array.isArray(value) ? value.map(v => v.value) : [value];
 }
 
-export async function* iterateIdls(base: URL) {
+export async function* iterateGeckoIdls(base: URL) {
   for await (const file of Deno.readDir(base)) {
     if (!file.name.endsWith(".webidl")) {
       continue;
@@ -30,4 +30,18 @@ export async function* iterateIdls(base: URL) {
 
     yield { fileName: file.name, ast };
   }
+}
+
+export async function getStandardInterfaceDefinitions(): Promise<Map<string, any>> {
+  const idl = await listAllIdl();
+
+  const map = new Map<string, string>();
+  for (const [key, file] of Object.entries(idl)) {
+    const text = await file.text();
+    const ast = webidl.parse(text, key);
+    for (const i of ast.filter(i => i.type === "interface" && !i.partial)) {
+      map.set(i.name, i);
+    }
+  }
+  return map;
 }

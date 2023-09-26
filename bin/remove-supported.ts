@@ -2,7 +2,7 @@ import * as webidl from "npm:gecko-webidl@1.0.1"
 import bcdApi from "npm:bcd-idl-mapper@2.2.2"
 import bcd from "npm:@mdn/browser-compat-data@5.3.17" with { type: "json" }
 import { supportedByGeckoEverywhere } from "../lib/support.ts";
-import { getInstrumentedPropsExtendedAttr, iterateIdls } from "../lib/idl.ts";
+import { getInstrumentedPropsExtendedAttr, iterateGeckoIdls } from "../lib/idl.ts";
 
 const exceptions: Record<string, string[]> = {
   Window: [
@@ -28,7 +28,7 @@ const exceptions: Record<string, string[]> = {
 // Iterate the webidl directory
 const trimmedList: string[] = [];
 const base = new URL("../../gecko-dev/dom/webidl/", import.meta.url);
-for await (const { fileName, ast } of iterateIdls(base)) {
+for await (const { fileName, ast } of iterateGeckoIdls(base)) {
   // Pick interfaces and trim [InstrumentedProps] based on BCD support data
   const trimmed: string[] = [];
   for (const i of ast.filter(i => i.type === "interface" && !i.partial)) {
