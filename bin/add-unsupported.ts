@@ -80,12 +80,12 @@ for await (const { fileName, ast } of iterateGeckoIdls(base)) {
   astMap.set(fileName, ast);
 }
 
-
 for (const [key, entries] of missingEntriesMap.entries()) {
   const targetInterfaceIdl = interfaceMap.get(key);
   if (!targetInterfaceIdl) {
     continue;
   }
+
   // XXX: create [InstrumentedProps] if not exists
   const instrumentedProps = getInstrumentedPropsExtendedAttr(targetInterfaceIdl);
   if (!instrumentedProps) {
@@ -115,6 +115,22 @@ for (const [key, entries] of missingEntriesMap.entries()) {
   }
   await Deno.writeTextFile(new URL(targetInterfaceIdl.source.name, base), webidl.write(astMap.get(targetInterfaceIdl.source.name)));
 }
+
+const confUrl = new URL("../../gecko-dev/dom/base/UseCounters.conf", import.meta.url);
+const conf = await Deno.readTextFile(confUrl);
+
+const startMarker = "// them and we only need one use counter, not a getter/setter pair.";
+const start = conf.indexOf(startMarker) + startMarker.length + 1;
+const end = conf.indexOf('\n\n', start);
+
+const existingConfEntries = new Set(conf.slice(start, end).split("\n"));
+const newProps: string[] = [...missingEntriesMap.entries()].flatMap(([key, entries]) => entries.map(entry => `method ${key}.${entry}`));
+for (const prop of newProps) {
+  existingConfEntries.add(prop);
+}
+const newConf = conf.slice(0, start) + [...existingConfEntries].sort((x, y) => x.localeCompare(y)).join("\n") + conf.slice(end);
+
+await Deno.writeTextFile(confUrl, newConf);
 
 function insertEmptyInstrumentedProps(i, entries: string[]) {
   // XXX: webidl2.js currently has no way to create AST item
