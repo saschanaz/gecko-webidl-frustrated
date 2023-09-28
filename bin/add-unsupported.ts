@@ -118,17 +118,27 @@ for (const [key, entries] of missingEntriesMap.entries()) {
 
 function insertEmptyInstrumentedProps(i, entries: string[]) {
   // XXX: webidl2.js currently has no way to create AST item
-  const dummyInterface = webidl.parse("[InstrumentedProps=(Dummy,Dummy), Exposed=Window] interface Foo {};")[0];
-  const instrumentedProps = dummyInterface.extAttrs?.find(e => e.name === "InstrumentedProps");
+  const dummyInterface = webidl.parse(`
+[Exposed=Window,
+ InstrumentedProps=(Dummy,
+                    Dummy)]
+ interface Foo {};
+`)[0];
+  const [exposed, instrumentedProps] = dummyInterface.extAttrs;
   const list = instrumentedProps.rhs.value;
   const dummy = list[0];
+  const trivia = list[1].tokens.value.trivia;
   list.length = 0;
   for (const entry of entries.toSorted()) {
     const tokens = { ...dummy.tokens };
     tokens.value = { ...dummy.tokens.value, value: entry };
+    if (list.length) {
+      tokens.value.trivia = trivia;
+    }
     const prop = new dummy.constructor({ tokens });
     list.push(prop);
   }
   list.at(-1).tokens.separator = undefined;
-  i.extAttrs.splice(0, 0, instrumentedProps);
+  i.extAttrs.at(-1).tokens.separator = exposed.tokens.separator;
+  i.extAttrs.push(instrumentedProps);
 }
