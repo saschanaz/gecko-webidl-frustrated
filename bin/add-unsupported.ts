@@ -1,7 +1,13 @@
 import * as webidl from "npm:gecko-webidl@1.0.1"
 import bcd from "npm:bcd-idl-mapper@2.2.2"
 import { lacksOnlyGeckoSupport, lacksOthersSupport } from "../lib/support.ts";
-import { getExposedGlobals, getInstrumentedPropsExtendedAttr, getStandardInterfaceDefinitions, iterateGeckoIdls } from "../lib/idl.ts";
+import {
+  getExposedGlobals,
+  getInstrumentedPropsExtendedAttr,
+  getStandardInterfaceDefinitions,
+  hasIndexedOrNamedGetter,
+  iterateGeckoIdls,
+} from "../lib/idl.ts";
 
 class EntriesMap {
   #map = new Map<string, string[]>;
@@ -83,6 +89,14 @@ for await (const { fileName, ast } of iterateGeckoIdls(base)) {
 for (const [key, entries] of missingEntriesMap.entries()) {
   const targetInterfaceIdl = interfaceMap.get(key);
   if (!targetInterfaceIdl) {
+    continue;
+  }
+  if (
+    !hasIndexedOrNamedGetter(targetInterfaceIdl) &&
+    // Document has indexers in HTMLDocument, Location has cross origin members
+    !["Document", "Location"].includes(targetInterfaceIdl.name)
+  ) {
+    console.warn(`Skipping ${targetInterfaceIdl.name} as it's not proxy based`);
     continue;
   }
 

@@ -45,3 +45,20 @@ export async function getStandardInterfaceDefinitions(): Promise<Map<string, any
   }
   return map;
 }
+
+function firstArgumentTypeIs(method, type: string) {
+  return method.arguments[0].idlType.idlType === type;
+}
+
+function isIndexedOrNamedGetter(member) {
+  return (
+    member.type === "operation" &&
+    member.special === "getter" &&
+    (firstArgumentTypeIs(member, "unsigned long") ||
+      firstArgumentTypeIs(member, "DOMString"))
+  );
+}
+
+export function hasIndexedOrNamedGetter(i) {
+  return i.members.some(isIndexedOrNamedGetter);
+}
