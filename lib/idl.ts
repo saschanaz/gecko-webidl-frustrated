@@ -1,14 +1,13 @@
-import * as webidl from "npm:gecko-webidl@1.0.1"
+import * as webidl from "npm:gecko-webidl@1.0.1";
 import { listAll as listAllIdl } from "npm:@webref/idl";
 
 export function getInstrumentedPropsExtendedAttr(i) {
-  return i.extAttrs?.find(e => e.name === "InstrumentedProps")?.rhs.value;
+  return i.extAttrs?.find((e) => e.name === "InstrumentedProps")?.rhs.value;
 }
 
 export function getExposedGlobals(i) {
-  const value = i.extAttrs
-    .find(e => e.name === "Exposed")?.rhs.value;
-  return Array.isArray(value) ? value.map(v => v.value) : [value];
+  const value = i.extAttrs.find((e) => e.name === "Exposed")?.rhs.value;
+  return Array.isArray(value) ? value.map((v) => v.value) : [value];
 }
 
 export async function* iterateGeckoIdls(base: URL) {
@@ -32,14 +31,16 @@ export async function* iterateGeckoIdls(base: URL) {
   }
 }
 
-export async function getStandardInterfaceDefinitions(): Promise<Map<string, any>> {
+export async function getStandardInterfaceDefinitions(): Promise<
+  Map<string, any>
+> {
   const idl = await listAllIdl();
 
   const map = new Map<string, string>();
   for (const [key, file] of Object.entries(idl)) {
     const text = await file.text();
     const ast = webidl.parse(text, key);
-    for (const i of ast.filter(i => i.type === "interface" && !i.partial)) {
+    for (const i of ast.filter((i) => i.type === "interface" && !i.partial)) {
       map.set(i.name, i);
     }
   }

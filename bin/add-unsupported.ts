@@ -1,5 +1,5 @@
-import * as webidl from "npm:gecko-webidl@1.0.1"
-import bcd from "npm:bcd-idl-mapper@2.2.2"
+import * as webidl from "npm:gecko-webidl@1.0.1";
+import bcd from "npm:bcd-idl-mapper@2.2.2";
 import { lacksOnlyGeckoSupport, lacksOthersSupport } from "../lib/support.ts";
 import {
   getExposedGlobals,
@@ -10,7 +10,7 @@ import {
 } from "../lib/idl.ts";
 
 class EntriesMap {
-  #map = new Map<string, string[]>;
+  #map = new Map<string, string[]>();
   get(key: string) {
     return this.#map.get(key);
   }
@@ -31,12 +31,14 @@ const missingEntriesMap = new EntriesMap();
 
 for (const [interfaceName, interfaceData] of Object.entries(bcd)) {
   // Global interfaces
-  if (interfaceName.startsWith("_") ||
+  if (
+    interfaceName.startsWith("_") ||
     // WebGL never exposes interfaces
     interfaceName.startsWith("EXT_") ||
     interfaceName.startsWith("KHR_") ||
     interfaceName.startsWith("OES_") ||
-    interfaceName.startsWith("WEBGL_")) {
+    interfaceName.startsWith("WEBGL_")
+  ) {
     continue;
   }
   if (lacksOthersSupport(interfaceData.__compat.support)) {
@@ -64,7 +66,9 @@ for (const [interfaceName, interfaceData] of Object.entries(bcd)) {
       continue;
     }
     if (memberData.__compat.description?.startsWith("An alternative name of")) {
-      console.warn(`Skipping ${interfaceName}.${memberName}, for now the BCD alternative name data is not reliable enough`);
+      console.warn(
+        `Skipping ${interfaceName}.${memberName}, for now the BCD alternative name data is not reliable enough`
+      );
       continue;
     }
     if (lacksOnlyGeckoSupport(memberData.__compat.support)) {
@@ -79,7 +83,7 @@ const astMap = new Map<string, any>();
 const interfaceMap = new Map<string, any>();
 for await (const { fileName, ast } of iterateGeckoIdls(base)) {
   // Collect interfaces and ASTs to rewrite later
-  const interfaces = ast.filter(i => i.type === "interface" && !i.partial);
+  const interfaces = ast.filter((i) => i.type === "interface" && !i.partial);
   for (const i of interfaces) {
     interfaceMap.set(i.name, i);
   }
@@ -101,19 +105,21 @@ for (const [key, entries] of missingEntriesMap.entries()) {
   }
 
   // XXX: create [InstrumentedProps] if not exists
-  const instrumentedProps = getInstrumentedPropsExtendedAttr(targetInterfaceIdl);
+  const instrumentedProps =
+    getInstrumentedPropsExtendedAttr(targetInterfaceIdl);
   if (!instrumentedProps) {
     insertEmptyInstrumentedProps(targetInterfaceIdl, entries);
   } else {
-
-    const filteredEntries = entries.filter(entry => !instrumentedProps.find(p => p.value === entry));
+    const filteredEntries = entries.filter(
+      (entry) => !instrumentedProps.find((p) => p.value === entry)
+    );
     if (!filteredEntries.length) {
       continue;
     }
 
     for (const entry of entries) {
       // Skip already existing props
-      if (instrumentedProps.find(p => p.value === entry)) {
+      if (instrumentedProps.find((p) => p.value === entry)) {
         continue;
       }
 
@@ -127,22 +133,34 @@ for (const [key, entries] of missingEntriesMap.entries()) {
     // Sort props in alphabetical order
     instrumentedProps.sort((x, y) => x.value.localeCompare(y.value));
   }
-  await Deno.writeTextFile(new URL(targetInterfaceIdl.source.name, base), webidl.write(astMap.get(targetInterfaceIdl.source.name)));
+  await Deno.writeTextFile(
+    new URL(targetInterfaceIdl.source.name, base),
+    webidl.write(astMap.get(targetInterfaceIdl.source.name))
+  );
 }
 
-const confUrl = new URL("../../gecko-dev/dom/base/UseCounters.conf", import.meta.url);
+const confUrl = new URL(
+  "../../gecko-dev/dom/base/UseCounters.conf",
+  import.meta.url
+);
 const conf = await Deno.readTextFile(confUrl);
 
-const startMarker = "// them and we only need one use counter, not a getter/setter pair.";
+const startMarker =
+  "// them and we only need one use counter, not a getter/setter pair.";
 const start = conf.indexOf(startMarker) + startMarker.length + 1;
-const end = conf.indexOf('\n\n', start);
+const end = conf.indexOf("\n\n", start);
 
 const existingConfEntries = new Set(conf.slice(start, end).split("\n"));
-const newProps: string[] = [...missingEntriesMap.entries()].flatMap(([key, entries]) => entries.map(entry => `method ${key}.${entry}`));
+const newProps: string[] = [...missingEntriesMap.entries()].flatMap(
+  ([key, entries]) => entries.map((entry) => `method ${key}.${entry}`)
+);
 for (const prop of newProps) {
   existingConfEntries.add(prop);
 }
-const newConf = conf.slice(0, start) + [...existingConfEntries].sort((x, y) => x.localeCompare(y)).join("\n") + conf.slice(end);
+const newConf =
+  conf.slice(0, start) +
+  [...existingConfEntries].sort((x, y) => x.localeCompare(y)).join("\n") +
+  conf.slice(end);
 
 await Deno.writeTextFile(confUrl, newConf);
 
